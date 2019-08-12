@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'MALabel_Example' do
+  pod 'MALabel', :path => '../'
+  pod 'MAAutoLayout'
+  target 'MALabel_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
