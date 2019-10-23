@@ -34,7 +34,8 @@
         NSLog(@"LongPressLinkL:%@",value);
     };
     NSMutableAttributedString *attStr = [MAContentLabelHelp attributedString:@"您将同意《 巴拉巴拉小魔仙协议 》werwerwekmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfgkmdflkjglkfjslkdjfglkjdsflkglkdsfjglkfjlfdjglkjdlk 18743849283 ma772528138@qq.com www.baidu.com http://www.kf5.com w.c.c " labelHelpHandle:MALabelHelpHandleAll font:nil color:nil];
-    [attStr addAttribute:MALinkAttributeName value:@{@"name":@"babalalaxiaomixian",@"url":@"https://www.baidu.com"} range:NSMakeRange(6, 9)];
+    [attStr addAttribute:MALinkAttributeName value:@{@"name":@"babalalaxiaomixian",@"url":@"https://www.baidu.com"}range:NSMakeRange(6, 9)];
+    [attStr addAttribute:MALinkTextTouchAttributesName value:@{NSBackgroundColorAttributeName : UIColor.redColor} range:NSMakeRange(6, 9)];
     [attStr addAttributes:@{NSForegroundColorAttributeName: [UIColor redColor]} range:NSMakeRange(6, 9)];
     [attStr addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleThick] range:NSMakeRange(0, 6)];
     NSString *str3 = @"dfsdfdsfdfly";
@@ -45,13 +46,13 @@
     //    label.linkTextAttributes =  @{NSForegroundColorAttributeName : [UIColor greenColor],NSUnderlineStyleAttributeName: [NSNumber numberWithInteger:NSUnderlineStyleThick]};
     
     //声明表情资源 NSTextAttachment类型
-    UIImage *image = [UIImage imageNamed:@"123.jpg"];
-    MATextAttachment *attachment = [[MATextAttachment alloc]init];
-    attachment.image = image;
-    [attStr insertAttributedString:[NSAttributedString attributedStringWithAttachment:attachment] atIndex:0];
-    [attStr addAttribute:MALinkAttributeName value:image range:NSMakeRange(0, 1)];
+    NSAttributedString *imageString = [MAContentLabelHelp attStringWithImage:[UIImage imageNamed:@"123.jpg"] font:[UIFont systemFontOfSize:30] spacing:5 userInfo:@{}];
+    [attStr insertAttributedString:imageString atIndex:0];
     
-    [attStr addAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:20]} range:NSMakeRange(0, attStr.length)];
+    [attStr addAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:30]} range:NSMakeRange(0, attStr.length)];
+    
+    [attStr addAttribute:MALinkTextTouchAttributesName value:@{NSForegroundColorAttributeName: [UIColor greenColor]} range:NSMakeRange(0, attStr.length)];
+
     label.attributedText = attStr;
 }
 

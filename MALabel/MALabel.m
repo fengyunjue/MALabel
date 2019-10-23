@@ -10,6 +10,8 @@
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
 NSString *const MALinkAttributeName = @"MALinkAttributeName";
+NSString *const MALinkTextTouchAttributesName = @"MALinkTextTouchAttributesName";
+NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 @interface MALabel()<UIGestureRecognizerDelegate>
 
@@ -156,10 +158,16 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
         [rangeValuesForTouchDown addObject:[NSValue valueWithRange:range]];
         
         NSMutableAttributedString *attributedText = [self.attributedText mutableCopy];
-        for (NSString *attribute in self.linkTextAttributes) {
+        
+        NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
+        NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName]?:self.linkTextTouchAttributes;
+        
+        for (NSString *attribute in linkTextAttributes) {
             [attributedText removeAttribute:attribute range:range];
         }
-        [attributedText addAttributes:self.linkTextTouchAttributes range:range];
+        if (linkTextTouchAttributes) {
+            [attributedText addAttributes:linkTextTouchAttributes range:range];
+        }
         [super setAttributedText:attributedText];
         
         if (self.linkCornerRadius > 0) {
@@ -174,11 +182,13 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
     NSMutableAttributedString *attributedText = [self.attributedText mutableCopy];
     for (NSValue *rangeValue in rangeValues) {
         NSRange range = rangeValue.rangeValue;
+        NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
+        NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName] ?:self.linkTextTouchAttributes;
         
-        for (NSString *attribute in self.linkTextTouchAttributes) {
+        for (NSString *attribute in linkTextTouchAttributes) {
             [attributedText removeAttribute:attribute range:range];
         }
-        [attributedText addAttributes:self.linkTextAttributes range:range];
+        [attributedText addAttributes:linkTextAttributes range:range];
     }
     [super setAttributedText:attributedText];
     self.layer.mask = nil;
@@ -246,7 +256,8 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
     NSMutableAttributedString *mutableAttributedText = [attributedText mutableCopy];
     [mutableAttributedText enumerateAttribute:MALinkAttributeName inRange:NSMakeRange(0, attributedText.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
         if (value) {
-            [mutableAttributedText addAttributes:self.linkTextAttributes range:range];
+            NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:mutableAttributedText range:range attributesName:MALinkTextAttributesName] ?: self.linkTextAttributes;
+            [mutableAttributedText addAttributes:linkTextAttributes range:range];
         }
     }];
     [super setAttributedText:mutableAttributedText];
@@ -266,6 +277,17 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
 
 - (CGFloat)allowableMovement{
     return self.linkGestureRecognizer.allowableMovement;
+}
+
++ (NSDictionary *)linkeAttributesWithAttributedText:(NSAttributedString *)attributedText range:(NSRange)range attributesName:(NSString *)attributesName {
+    if (attributedText == nil || attributedText.length < range.location + range.length || attributesName == nil) {
+        return nil;
+    }
+    NSDictionary *dict = [attributedText attributesAtIndex:range.location longestEffectiveRange:nil inRange:range][attributesName];
+    if (dict && [dict isKindOfClass:[NSDictionary class]]) {
+        return dict;
+    }
+    return nil;
 }
 
 @end
@@ -369,17 +391,6 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
 }
 
 @end
-
-
-@implementation MATextAttachment
-
-//重载此方法 使得图片的大小和行高是一样的。
-- (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer proposedLineFragment:(CGRect)lineFrag glyphPosition:(CGPoint)position characterIndex:(NSUInteger)charIndex{
-    return CGRectMake(0, 0, lineFrag.size.height, lineFrag.size.height);
-}
-
-@end
-
 
 @implementation MAContentLabelHelp
 
@@ -515,6 +526,35 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
     return attributedString;
 }
 
+/**
+ 制作图片富文本
+ */
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing userInfo:(NSDictionary *)userInfo {
+    if (image == nil || font == nil) {
+        return [self attStringWithString:@"" font:font color:nil];
+    }
+    NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
+    NSTextAttachment *attach = [[NSTextAttachment alloc] init];
+    attach.image = image;
+    if (font) {
+        CGFloat imgH = font.pointSize;
+        CGFloat imgW = (image.size.width / image.size.height) * imgH;
+        CGFloat textPaddingTop = (font.lineHeight - font.pointSize) / 2;
+        attach.bounds = CGRectMake(0, -textPaddingTop , imgW, imgH);
+    }
+    NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
+    if (userInfo) {
+        [attachmentStr addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attachmentStr.length)];
+    }
+    [textAttrStr appendAttributedString:attachmentStr];
+    if (spacing > 0) {
+        [textAttrStr appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+        [textAttrStr addAttribute:NSKernAttributeName value:@(spacing)
+                            range:NSMakeRange(0, 2)];
+    }
+    return textAttrStr;
+}
+
 #pragma mark - 正则表达式
 static NSRegularExpression *regexAtagFormat;
 static NSRegularExpression *regexHttp;
@@ -534,7 +574,7 @@ static NSRegularExpression *regexNBSP;
         // 匹配http
         regexHttp = [NSRegularExpression regularExpressionWithPattern:@"([hH]ttp[s]{0,1})://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\-~!@#$%^&*+?:_/=<>.\',;]*)?" options:kNilOptions error:NULL];
         // {{}}
-//        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
+        //        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
         // 匹配手机号
         regexPhone = [NSRegularExpression regularExpressionWithPattern:@"1[0-9]{10}(?!\\d)" options:kNilOptions error:NULL];
         // 匹配img

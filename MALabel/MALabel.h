@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 
 extern NSString * _Nonnull const MALinkAttributeName;
+extern NSString * _Nonnull const MALinkTextTouchAttributesName;
+extern NSString * _Nonnull const MALinkTextAttributesName;
 
 typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
     MALinkGestureRecognizerResultUnknown,
@@ -55,10 +57,6 @@ typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
 
 @end
 
-@interface MATextAttachment : NSTextAttachment
-
-@end
-
 typedef NS_OPTIONS(NSInteger, MALabelHelpHandle) {
     MALabelHelpHandleATag    = 1 << 0,      // 匹配a标签[MALinkAtagFormatUrl][MALinkAtagFormatName]
     MALabelHelpHandleImg     = 1 << 1,      // 匹配http[kMALinkTypeImg]
@@ -88,7 +86,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  *  @param font      文本字体
  *  @param color  文本颜色
  */
-+ (NSMutableAttributedString *_Nullable)documentStringWithString:(NSString *_Nullable)string urlString:(NSString *_Nullable)urlString font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
++ (NSMutableAttributedString *_Nonnull)documentStringWithString:(NSString *_Nullable)string urlString:(NSString *_Nullable)urlString font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
 /**
  *  聊天消息匹配电话,url,http,a标签
  *
@@ -96,7 +94,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  *  @param font      字体
  *  @param color 文本颜色
  */
-+ (NSMutableAttributedString *_Nullable)baseMessageWithString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
++ (NSMutableAttributedString *_Nonnull)baseMessageWithString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
 /**
  *  匹配电话,url,http,a标签
  *
@@ -105,7 +103,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  *  @param font      字体
  *  @param color 文本颜色
  */
-+ (NSMutableAttributedString *_Nullable)attributedString:(NSString *_Nullable)string labelHelpHandle:(MALabelHelpHandle)optional font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
++ (NSMutableAttributedString *_Nonnull)attributedString:(NSString *_Nullable)string labelHelpHandle:(MALabelHelpHandle)optional font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
 /**
  *  制作高亮富文本
  *
@@ -114,7 +112,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  *  @param font     字体
  *  @param color 文本颜色
  */
-+ (NSMutableAttributedString *_Nullable)hightlightBorderWithString:(NSString *_Nullable)string userInfo:(NSDictionary *_Nullable)userInfo font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
++ (NSMutableAttributedString *_Nonnull)hightlightBorderWithString:(NSString *_Nullable)string userInfo:(NSDictionary *_Nullable)userInfo font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
 
 /**
  制作普通富文本
@@ -123,5 +121,14 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  @param font 字体
  @param color 文本颜色
  */
-+ (NSMutableAttributedString *_Nullable)attStringWithString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
++ (NSMutableAttributedString *_Nonnull)attStringWithString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
+/**
+ 制作图片富文本
+ 
+ @param image 图片
+ @param font 字体
+ @param spacing 间距
+ @param userInfo 附加信息
+ */
++ (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image font:(UIFont *_Nullable)font spacing:(CGFloat)spacing userInfo:(NSDictionary * _Nullable)userInfo;
 @end
