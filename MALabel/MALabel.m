@@ -13,10 +13,15 @@ NSString *const MALinkAttributeName = @"MALinkAttributeName";
 NSString *const MALinkTextTouchAttributesName = @"MALinkTextTouchAttributesName";
 NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
+
+NSString *const MASuperLinkAttributeName = @"MASuperLinkAttributeName";
+NSString *const MASuperLinkTextTouchAttributesName = @"MASuperLinkTextTouchAttributesName";
+
+
 @interface MALabel()<UIGestureRecognizerDelegate>
 
-@property (nonatomic, copy) NSArray *rangeValuesForTouchDown;
-@property (nonatomic) MALinkGestureRecognizer *linkGestureRecognizer;
+@property (nonatomic, strong) NSArray <NSDictionary *>*rangeValuesForTouchDown;
+@property (nonatomic, strong) MALinkGestureRecognizer *linkGestureRecognizer;
 
 @end
 
@@ -46,6 +51,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
     self.editable = NO;
     
     self.linkTextTouchAttributes = @{NSBackgroundColorAttributeName : UIColor.lightGrayColor};
+    self.superLinkTextTouchAttributes = @{NSBackgroundColorAttributeName : UIColor.lightGrayColor};
     self.tapAreaInsets = UIEdgeInsetsMake(-5, -5, -5, -5);
 }
 
@@ -95,7 +101,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
     }
 }
 
-- (BOOL)enumerateLinkRangesContainingLocation:(CGPoint)location usingBlock:(void (^)(NSRange range))block{
+- (BOOL)enumerateLinkRangesContainingLocation:(CGPoint)location usingBlock:(void (^)(NSRange range, BOOL isSuperLink))block{
     __block BOOL found = NO;
     
     NSAttributedString *attributedString = self.attributedText;
@@ -114,12 +120,35 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
                     found = YES;
                     *stop = YES;
                     if (block) {
-                        block(range);
+                        block(range, NO);
                     }
                 }
             }];
         }
     }];
+    if (found == NO) {
+        [attributedString enumerateAttribute:MASuperLinkAttributeName inRange:NSMakeRange(0, attributedString.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+            if (found) {
+                *stop = YES;
+                return;
+            }
+            if (value) {
+                [self enumerateViewRectsForRanges:@[[NSValue valueWithRange:range]] usingBlock:^(CGRect rect, NSRange range, BOOL *stop) {
+                    if (found) {
+                        *stop = YES;
+                        return;
+                    }
+                    if (CGRectContainsPoint(rect, location)) {
+                        found = YES;
+                        *stop = YES;
+                        if (block) {
+                            block(range, YES);
+                        }
+                    }
+                }];
+            }
+        }];
+    }
     
     return found;
 }
@@ -152,21 +181,28 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 #pragma mark Gesture handling
 
-- (NSArray *)didTouchDownAtLocation:(CGPoint)location{
+- (NSArray <NSDictionary *>*)didTouchDownAtLocation:(CGPoint)location{
     NSMutableArray *rangeValuesForTouchDown = [NSMutableArray array];
-    [self enumerateLinkRangesContainingLocation:location usingBlock:^(NSRange range) {
-        [rangeValuesForTouchDown addObject:[NSValue valueWithRange:range]];
+    [self enumerateLinkRangesContainingLocation:location usingBlock:^(NSRange range, BOOL isSuperLink) {
+        [rangeValuesForTouchDown addObject:@{@"range":[NSValue valueWithRange:range],@"isSuperLink":@(isSuperLink)}];
         
         NSMutableAttributedString *attributedText = [self.attributedText mutableCopy];
         
-        NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
-        NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName]?:self.linkTextTouchAttributes;
-        
-        for (NSString *attribute in linkTextAttributes) {
-            [attributedText removeAttribute:attribute range:range];
-        }
-        if (linkTextTouchAttributes) {
-            [attributedText addAttributes:linkTextTouchAttributes range:range];
+        if (isSuperLink) {
+            NSDictionary *superLinkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MASuperLinkTextTouchAttributesName]?:self.superLinkTextTouchAttributes;
+             if (superLinkTextTouchAttributes) {
+                 [attributedText addAttributes:superLinkTextTouchAttributes range:range];
+             }
+        }else{
+            NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
+            NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName]?:self.linkTextTouchAttributes;
+             
+             for (NSString *attribute in linkTextAttributes) {
+                 [attributedText removeAttribute:attribute range:range];
+             }
+             if (linkTextTouchAttributes) {
+                 [attributedText addAttributes:linkTextTouchAttributes range:range];
+             }
         }
         [super setAttributedText:attributedText];
         
@@ -180,15 +216,26 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 - (void)didCancelTouchDownAtRangeValues:(NSArray *)rangeValues{
     NSMutableAttributedString *attributedText = [self.attributedText mutableCopy];
-    for (NSValue *rangeValue in rangeValues) {
-        NSRange range = rangeValue.rangeValue;
-        NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
-        NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName] ?:self.linkTextTouchAttributes;
+    for (NSDictionary *value in rangeValues) {
+        NSRange range = [value[@"range"] rangeValue];
+        BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
         
-        for (NSString *attribute in linkTextTouchAttributes) {
-            [attributedText removeAttribute:attribute range:range];
+        if (isSuperLink) {
+            NSDictionary *superLinkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MASuperLinkTextTouchAttributesName]?:self.superLinkTextTouchAttributes;
+            for (NSString *attribute in superLinkTextTouchAttributes) {
+                [attributedText removeAttribute:attribute range:range];
+            }
+        }else{
+            NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
+            NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName] ?:self.linkTextTouchAttributes;
+            
+            for (NSString *attribute in linkTextTouchAttributes) {
+                [attributedText removeAttribute:attribute range:range];
+            }
+            if (linkTextAttributes) {
+                [attributedText addAttributes:linkTextAttributes range:range];
+            }
         }
-        [attributedText addAttributes:linkTextAttributes range:range];
     }
     [super setAttributedText:attributedText];
     self.layer.mask = nil;
@@ -196,10 +243,11 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 - (void)didTapAtRangeValues:(NSArray *)rangeValues{
     if (rangeValues.count > 0 && self.linkTapBlock) {
-        for (NSValue *rangeValue in rangeValues) {
-            NSRange range = rangeValue.rangeValue;
+        for (NSDictionary *value in rangeValues) {
+            NSRange range = [value[@"range"] rangeValue];
+            BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
             if (range.location < self.attributedText.length) {
-                id value = [self.attributedText attribute:MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                id value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
                 self.linkTapBlock(self, value);
             }else if (self.commonTapBlock){
                 self.commonTapBlock(self);
@@ -212,10 +260,11 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 - (void)didLongPressAtRangeValues:(NSArray *)rangeValues{
     if (rangeValues.count > 0 && self.linkLongPressBlock) {
-        for (NSValue *rangeValue in rangeValues) {
-            NSRange range = rangeValue.rangeValue;
+        for (NSDictionary *value in rangeValues) {
+            NSRange range = [value[@"range"] rangeValue];
+            BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
             if (range.location < self.attributedText.length) {
-                id value = [self.attributedText attribute:MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                id value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
                 self.linkLongPressBlock(self, value);
             }else if (self.commonLongPressBlock){
                 self.commonLongPressBlock(self);
@@ -257,7 +306,9 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
     [mutableAttributedText enumerateAttribute:MALinkAttributeName inRange:NSMakeRange(0, attributedText.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
         if (value) {
             NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:mutableAttributedText range:range attributesName:MALinkTextAttributesName] ?: self.linkTextAttributes;
-            [mutableAttributedText addAttributes:linkTextAttributes range:range];
+            if (linkTextAttributes) {
+                [mutableAttributedText addAttributes:linkTextAttributes range:range];
+            }
         }
     }];
     [super setAttributedText:mutableAttributedText];
@@ -394,30 +445,51 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
 @implementation MAContentLabelHelp
 
-+ (NSMutableAttributedString *)baseMessageWithString:(NSString *)string font:(UIFont *)font color:(UIColor *)color{
-    return [self attributedString:string labelHelpHandle:MALabelHelpHandleATag|MALabelHelpHandleHttp|MALabelHelpHandlePhone|MALabelHelpHandleImg font:font color:color];
+#pragma mark - 便捷添加属性
+
+/// 添加点击属性
++ (void)addLinkAttributeWithString:(NSMutableAttributedString *_Nullable)attributeString userInfo:(NSDictionary *_Nullable)userInfo linkTextAttributes:(NSDictionary<NSAttributedStringKey, id> *_Nullable)linkTextAttributes linkTextTouchAttributes:(NSDictionary<NSAttributedStringKey, id> *_Nullable)linkTextTouchAttributes range:(NSRange)range {
+    if (attributeString == nil || attributeString.length < range.location + range.length) { return; }
+    if (userInfo) {
+        [attributeString addAttribute:MALinkAttributeName value:userInfo range:range];
+    }
+    if (linkTextAttributes) {
+        [attributeString addAttribute:MALinkTextAttributesName value:linkTextAttributes range:range];
+    }
+    if (linkTextTouchAttributes) {
+        [attributeString addAttribute:MALinkTextTouchAttributesName value:linkTextTouchAttributes range:range];
+    }
 }
 
-+ (NSMutableAttributedString *)documentStringWithString:(NSString *)string urlString:(NSString *)urlString font:(UIFont *)font color:(UIColor *)color{
-    return [self hightlightBorderWithString:string userInfo:[self userInfoWithType:kMALinkTypeURL title:string key:urlString] font:font color:color];
+/// 添加次优先级的点击属性
++ (void)addSuperLinkAttributeWithString:(NSMutableAttributedString *_Nullable)attributeString userInfo:(NSDictionary *_Nullable)userInfo linkTextTouchAttributes:(NSDictionary<NSAttributedStringKey, id> *_Nullable)linkTextTouchAttributes range:(NSRange)range {
+    if (attributeString == nil || attributeString.length < range.location + range.length) { return; }
+    if (userInfo) {
+        [attributeString addAttribute:MASuperLinkAttributeName value:userInfo range:range];
+    }
+    if (linkTextTouchAttributes) {
+        [attributeString addAttribute:MASuperLinkTextTouchAttributesName value:linkTextTouchAttributes range:range];
+    }
 }
+
+#pragma mark - 创建富文本
 
 + (NSMutableAttributedString *)attributedString:(NSString *)string labelHelpHandle:(MALabelHelpHandle)optional font:(UIFont *)font color:(UIColor *)color{
-    if (string.length == 0) return [self attStringWithString:@" " font:font color:color];
+    if (string.length == 0) return [self attStringWithString:@" " font:font color:color userInfo:nil];
     
     [self regexInitialization];
     
-    NSMutableAttributedString *text = [self attStringWithString:string font:font color:color];
+    NSMutableAttributedString *text = [self attStringWithString:string font:font color:color userInfo:nil];
     __weak typeof(self)weakSelf = self;
     // 匹配过滤br标签
     text = [self matchingWithRegular:regexBr attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
         if (results.count != 1) return nil;
-        return [weakSelf attStringWithString:@"\n" font:font color:color];
+        return [weakSelf attStringWithString:@"\n" font:font color:color userInfo:nil];
     }];
     // 匹配过滤p标签
     text = [self matchingWithRegular:regexP attributeString:text mapHandle:^NSAttributedString *(NSArray <NSString *>*results) {
         if (results.count != 3) return nil;
-        return [weakSelf attStringWithString:[NSString stringWithFormat:@"%@%@",results[1], [results[2] isEqualToString:@"\n"] ? @"" : @"\n"] font:font color:color];
+        return [weakSelf attStringWithString:[NSString stringWithFormat:@"%@%@",results[1], [results[2] isEqualToString:@"\n"] ? @"" : @"\n"] font:font color:color userInfo:nil];
     }];
     
     if (optional&MALabelHelpHandleATag) {
@@ -426,7 +498,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
             if (results.count != 3) return nil;
             NSString *href = results[1];
             NSString *title = results[2];
-            return [weakSelf hightlightBorderWithString:title userInfo:[weakSelf userInfoWithType:[title isEqualToString:@"[图片]"] ? kMALinkTypeImg : kMALinkTypeURL title:title key:href] font:font color:color];
+            return [weakSelf attStringWithString:title font:font color:color userInfo:[weakSelf userInfoWithType:[title isEqualToString:@"[图片]"] ? kMALinkTypeImg : kMALinkTypeURL title:title key:href]];
         }];
     }
     
@@ -436,7 +508,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
             if (results.count != 2) return nil;
             NSString *imgStr = results[1];
             NSString *title = @"[图片]";
-            return [weakSelf hightlightBorderWithString:title userInfo:[weakSelf userInfoWithType:kMALinkTypeImg title:title key:imgStr] font:font color:color];
+            return [weakSelf attStringWithString:title font:font color:color userInfo:[weakSelf userInfoWithType:kMALinkTypeImg title:title key:imgStr]];
         }];
     }
     
@@ -445,7 +517,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
         text = [self matchingWithRegular:regexHttp attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
             if (results.count == 0) return nil;
             NSString *httpStr = results[0];
-            return [weakSelf hightlightBorderWithString:httpStr userInfo:[weakSelf userInfoWithType:kMALinkTypeURL title:httpStr key:httpStr] font:font color:color];
+            return [weakSelf attStringWithString:httpStr font:font color:color userInfo:[weakSelf userInfoWithType:kMALinkTypeURL title:httpStr key:httpStr]];
         }];
     }
     
@@ -454,50 +526,20 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
         text = [self matchingWithRegular:regexPhone attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
             if (results.count != 1) return nil;
             NSString *phoneStr = results[0];
-            return [weakSelf hightlightBorderWithString:phoneStr userInfo:[weakSelf userInfoWithType:kMALinkTypePhone title:phoneStr key:phoneStr] font:font color:color];
+            return [weakSelf attStringWithString:phoneStr font:font color:color userInfo:[weakSelf userInfoWithType:kMALinkTypePhone title:phoneStr key:phoneStr]];
         }];
     }
     // 匹配过滤其他标签和尾部的换行以及尾部的&nbsp;
     text = [self matchingWithRegular:regexOther attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
-        return [weakSelf attStringWithString:@"" font:font color:color];
+        return [weakSelf attStringWithString:@"" font:font color:color userInfo:nil];
     }];
     // 匹配&nbsp;
     text = [self matchingWithRegular:regexNBSP attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
         if (results.count != 1) return nil;
-        return [weakSelf attStringWithString:@" " font:font color:color];
+        return [weakSelf attStringWithString:@" " font:font color:color userInfo:nil];
     }];
     return text;
 }
-
-+ (NSMutableAttributedString *)matchingWithRegular:(NSRegularExpression *)regular attributeString:(NSMutableAttributedString *)attributeString mapHandle:(NSAttributedString * (^)(NSArray *results))mapHandle {
-    NSArray *array = [regular matchesInString:attributeString.string options:kNilOptions range:NSMakeRange(0, attributeString.string.length)];
-    NSUInteger offSet = 0;
-    for (NSTextCheckingResult *value in array) {
-        if (value.range.location == NSNotFound && value.range.length <= 1) continue;
-        NSRange range = value.range;
-        range.location += offSet;
-        if ([self attribute:attributeString attributeName:MALinkAttributeName atIndex:range.location]) continue;
-        
-        NSMutableArray <NSString *>*results = [NSMutableArray array];
-        for (NSInteger index = 0; index < value.numberOfRanges; index++) {
-            NSRange ran = [value rangeAtIndex:index];
-            if (ran.location != NSNotFound) {
-                ran.location += offSet;
-                NSString *str = [attributeString.string substringWithRange:ran];
-                if (str.length > 0) {
-                    [results addObject: str];
-                }
-            }
-        }
-        NSAttributedString *replace = mapHandle(results);
-        if (replace) {
-            [attributeString replaceCharactersInRange:range withAttributedString:replace];
-            offSet += replace.length - range.length;
-        }
-    }
-    return attributeString;
-}
-
 
 /**
  *  制作高亮的富文本
@@ -505,24 +547,18 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
  *  @param string   文本
  *  @param userInfo 携带信息
  */
-+ (NSMutableAttributedString *)hightlightBorderWithString:(NSString *)string userInfo:(NSDictionary *)userInfo font:(UIFont *)font color:(UIColor *)color{
-    if (string.length == 0) return [self attStringWithString:@" " font:font color:color];
-    
-    NSMutableAttributedString *hightlightString = [self attStringWithString:string font:font color:color];
-    [hightlightString addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, hightlightString.length)];
-    
-    return hightlightString;
-}
-/**
- *  制作普通富文本
- */
-+ (NSMutableAttributedString *)attStringWithString:(NSString *)string font:(UIFont *)font color:(UIColor *)color{
-    if (!string) string = @"";
-    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
-    if (font)
-        [attributedString addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, attributedString.length)];
-    if (color)
-        [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
++ (NSMutableAttributedString *)attStringWithString:(NSString *)string font:(UIFont *)font color:(UIColor *)color userInfo:(NSDictionary *)userInfo{
+    if (string.length == 0) {string = @"";}
+     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:string];
+    if (font){
+         [attributedString addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, attributedString.length)];
+    }
+    if (color){
+         [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, attributedString.length)];
+    }
+    if (userInfo) {
+        [attributedString addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attributedString.length)];
+    }
     return attributedString;
 }
 
@@ -531,7 +567,7 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
  */
 + (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing userInfo:(NSDictionary *)userInfo {
     if (image == nil || font == nil) {
-        return [self attStringWithString:@"" font:font color:nil];
+        return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
     NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
     NSTextAttachment *attach = [[NSTextAttachment alloc] init];
@@ -553,6 +589,15 @@ NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
                             range:NSMakeRange(0, 2)];
     }
     return textAttrStr;
+}
+
+#pragma mark userInfo制作
++ (NSMutableDictionary *)userInfoWithType:(kMALinkType)linkType title:(NSString *)title key:(NSString *)key{
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    [userInfo setObject:@(linkType) forKey:MALinkType];
+    [userInfo setObject:title?:@"" forKey:MALinkTitle];
+    [userInfo setObject:key?:@"" forKey:MALinkKey];
+    return userInfo;
 }
 
 #pragma mark - 正则表达式
@@ -590,13 +635,33 @@ static NSRegularExpression *regexNBSP;
     });
 }
 
-#pragma mark userInfo制作
-+ (NSMutableDictionary *)userInfoWithType:(kMALinkType)linkType title:(NSString *)title key:(NSString *)key{
-    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-    [userInfo setObject:@(linkType) forKey:MALinkType];
-    [userInfo setObject:title?:@"" forKey:MALinkTitle];
-    [userInfo setObject:key?:@"" forKey:MALinkKey];
-    return userInfo;
++ (NSMutableAttributedString *)matchingWithRegular:(NSRegularExpression *)regular attributeString:(NSMutableAttributedString *)attributeString mapHandle:(NSAttributedString * (^)(NSArray *results))mapHandle {
+    NSArray *array = [regular matchesInString:attributeString.string options:kNilOptions range:NSMakeRange(0, attributeString.string.length)];
+    NSUInteger offSet = 0;
+    for (NSTextCheckingResult *value in array) {
+        if (value.range.location == NSNotFound && value.range.length <= 1) continue;
+        NSRange range = value.range;
+        range.location += offSet;
+        if ([self attribute:attributeString attributeName:MALinkAttributeName atIndex:range.location]) continue;
+        
+        NSMutableArray <NSString *>*results = [NSMutableArray array];
+        for (NSInteger index = 0; index < value.numberOfRanges; index++) {
+            NSRange ran = [value rangeAtIndex:index];
+            if (ran.location != NSNotFound) {
+                ran.location += offSet;
+                NSString *str = [attributeString.string substringWithRange:ran];
+                if (str.length > 0) {
+                    [results addObject: str];
+                }
+            }
+        }
+        NSAttributedString *replace = mapHandle(results);
+        if (replace) {
+            [attributeString replaceCharactersInRange:range withAttributedString:replace];
+            offSet += replace.length - range.length;
+        }
+    }
+    return attributeString;
 }
 
 + (id)attribute:(NSAttributedString *)attribute attributeName:(NSString *)attributeName atIndex:(NSUInteger)index {
