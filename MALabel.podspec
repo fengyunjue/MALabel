@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MALabel'
-  s.version          = '1.2.0'
+  s.version          = '1.2.1'
   s.summary          = 'A short description of MALabel.'
 
 # This description is used to generate tags and improve search results.
@@ -31,5 +31,5 @@ TODO: Add long description of the pod here.
 
   s.source_files = 'MALabel/**/*'
   s.public_header_files = 'MALabel/**/*.h'
-  s.frameworks = 'UIKit', 'MapKit'
+  s.frameworks = 'UIKit'
 end
