@@ -407,7 +407,7 @@ NSString *const MASuperLinkTextTouchAttributesName = @"MASuperLinkTextTouchAttri
     self.initialPoint = [touch locationInView:self.view];
     self.state = UIGestureRecognizerStateBegan;
     
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:self.minimumPressDuration target:self selector:@selector(longPressed:) userInfo:nil repeats:NO];
+    self.timer = [MASafeTimer scheduledTimerWithTimeInterval:self.minimumPressDuration target:self selector:@selector(longPressed:) userInfo:nil repeats:NO];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
@@ -669,6 +669,41 @@ static NSRegularExpression *regexNBSP;
     if (index > attribute.length || attribute.length == 0) return nil;
     if (attribute.length > 0 && index == attribute.length) index--;
     return [attribute attribute:attributeName atIndex:index effectiveRange:NULL];
+}
+
+@end
+
+
+@interface MASafeTimer ()
+
+@property (nonatomic, assign) SEL selector;
+@property (nonatomic, weak) NSTimer *timer;
+@property (nonatomic, weak) id target;
+@end
+
+@implementation MASafeTimer
+
+- (void)run:(NSTimer *)timer {
+    if (!self.target) {
+        [self.timer invalidate];
+    }else {
+        [self.target performSelector:self.selector withObject:timer.userInfo];
+    }
+    
+}
++ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval target:(id)target selector:(SEL)aSelector userInfo:(nullable id)userInfo repeats:(BOOL)repeats {
+    MASafeTimer *crTimer = [[MASafeTimer alloc] init];
+    crTimer.target = target;
+    crTimer.selector = aSelector;
+    crTimer.timer = [NSTimer timerWithTimeInterval:interval target:crTimer selector:@selector(run:) userInfo:userInfo repeats:repeats];
+    return crTimer.timer;
+}
++ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval target:(id)target selector:(SEL)aSelector userInfo:(id)userInfo repeats :(BOOL)repeats {
+    MASafeTimer *crTimer = [[MASafeTimer alloc] init];
+    crTimer.target = target;
+    crTimer.selector = aSelector;
+    crTimer.timer = [NSTimer scheduledTimerWithTimeInterval:interval target:crTimer selector:@selector(run:) userInfo:userInfo repeats:repeats];
+    return crTimer.timer;
 }
 
 @end
