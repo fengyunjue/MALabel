@@ -9,13 +9,12 @@
 #import "MALabel.h"
 #import <UIKit/UIGestureRecognizerSubclass.h>
 
-NSString *const MALinkAttributeName = @"MALinkAttributeName";
-NSString *const MALinkTextTouchAttributesName = @"MALinkTextTouchAttributesName";
-NSString *const MALinkTextAttributesName = @"MALinkTextAttributesName";
+NSAttributedStringKey const MALinkAttributeName = @"MALinkAttributeName";
+NSAttributedStringKey const MALinkTextTouchAttributesName = @"MALinkTextTouchAttributesName";
+NSAttributedStringKey const MALinkTextAttributesName = @"MALinkTextAttributesName";
 
-
-NSString *const MASuperLinkAttributeName = @"MASuperLinkAttributeName";
-NSString *const MASuperLinkTextTouchAttributesName = @"MASuperLinkTextTouchAttributesName";
+NSAttributedStringKey const MASuperLinkAttributeName = @"MASuperLinkAttributeName";
+NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTextTouchAttributesName";
 
 
 @interface MALabel()<UIGestureRecognizerDelegate>

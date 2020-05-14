@@ -8,13 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-extern NSString * _Nonnull const MALinkAttributeName;
-extern NSString * _Nonnull const MALinkTextTouchAttributesName;
-extern NSString * _Nonnull const MALinkTextAttributesName;
+UIKIT_EXTERN NSAttributedStringKey _Nonnull const MALinkAttributeName;
+UIKIT_EXTERN NSAttributedStringKey  _Nonnull const MALinkTextTouchAttributesName;
+UIKIT_EXTERN NSAttributedStringKey  _Nonnull const MALinkTextAttributesName;
 
-
-extern NSString * _Nonnull const MASuperLinkAttributeName;
-extern NSString * _Nonnull const MASuperLinkTextTouchAttributesName;
+UIKIT_EXTERN NSAttributedStringKey  _Nonnull const MASuperLinkAttributeName;
+UIKIT_EXTERN NSAttributedStringKey  _Nonnull const MASuperLinkTextTouchAttributesName;
 
 typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
     MALinkGestureRecognizerResultUnknown,
@@ -26,8 +25,8 @@ typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
 @class MALinkGestureRecognizer;
 @interface MALabel : UITextView
 
-@property (nonatomic, copy) NSDictionary<NSString *, id> * _Nullable linkTextTouchAttributes;
-@property (nonatomic, copy) NSDictionary<NSString *, id> * _Nullable superLinkTextTouchAttributes;
+@property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> * _Nullable linkTextTouchAttributes;
+@property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> * _Nullable superLinkTextTouchAttributes;
 
 @property (nonatomic, assign) CFTimeInterval minimumPressDuration;
 
@@ -140,7 +139,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
 
 @interface MASafeTimer : NSObject
 
-+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval target:(id)target selector:(SEL)aSelector userInfo:(id)userInfo repeats :(BOOL)repeats;
-+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval target:(id)target selector:(SEL)aSelector userInfo:(nullable id)userInfo repeats:(BOOL)repeats;
++ (NSTimer *_Nullable)scheduledTimerWithTimeInterval:(NSTimeInterval)interval target:(id _Nullable )target selector:(SEL _Nullable )aSelector userInfo:(id _Nullable )userInfo repeats :(BOOL)repeats;
++ (NSTimer *_Nullable)timerWithTimeInterval:(NSTimeInterval)interval target:(id _Nullable )target selector:(SEL _Nullable )aSelector userInfo:(nullable id)userInfo repeats:(BOOL)repeats;
 
 @end
