@@ -591,7 +591,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 }
 
 #pragma mark userInfo制作
-+ (NSMutableDictionary *)userInfoWithType:(kMALinkType)linkType title:(NSString *)title key:(NSString *)key{
++ (NSMutableDictionary *)userInfoWithType:(NSUInteger)linkType title:(NSString *)title key:(NSString *)key{
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     [userInfo setObject:@(linkType) forKey:MALinkType];
     [userInfo setObject:title?:@"" forKey:MALinkTitle];

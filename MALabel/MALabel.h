@@ -135,6 +135,10 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  */
 + (NSMutableAttributedString *_Nonnull)attributedString:(NSString *_Nullable)string labelHelpHandle:(MALabelHelpHandle)optional font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color;
 
++ (NSMutableAttributedString *_Nullable)matchingWithRegular:(NSRegularExpression *_Nullable)regular attributeString:(NSMutableAttributedString *_Nullable)attributeString mapHandle:(NSAttributedString * _Nullable (^_Nullable)(NSArray * _Nullable results))mapHandle;
+
++ (NSMutableDictionary *_Nonnull)userInfoWithType:(NSUInteger)linkType title:(NSString *_Nullable)title key:(NSString *_Nullable)key;
+
 @end
 
 @interface MASafeTimer : NSObject
