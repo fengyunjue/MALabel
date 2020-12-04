@@ -574,7 +574,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     if (font) {
         CGFloat imgH = font.pointSize;
         CGFloat imgW = (image.size.width / image.size.height) * imgH;
-        CGFloat textPaddingTop = (font.lineHeight - font.pointSize) / 2;
+        CGFloat textPaddingTop = font.lineHeight - font.pointSize;
         attach.bounds = CGRectMake(0, -textPaddingTop , imgW, imgH);
     }
     NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
@@ -584,8 +584,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     [textAttrStr appendAttributedString:attachmentStr];
     if (spacing > 0) {
         [textAttrStr appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-        [textAttrStr addAttribute:NSKernAttributeName value:@(spacing)
-                            range:NSMakeRange(0, 2)];
+        [textAttrStr addAttribute:NSKernAttributeName value:@(spacing) range:NSMakeRange(0, 2)];
     }
     return textAttrStr;
 }
