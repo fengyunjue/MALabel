@@ -589,6 +589,25 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     return textAttrStr;
 }
 
+static NSRegularExpression *regexBracket;
+
++ (NSMutableAttributedString *)attributedBracketString:(NSString *)string font:(UIFont *)font color:(UIColor *)color block:(void(^)(NSMutableAttributedString *attributedString))block {
+    if (regexBracket == nil) {
+        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
+    }
+    NSMutableAttributedString *text = [self attStringWithString:string font:font color:color userInfo:nil];
+    __weak typeof(self) weakSelf = self;
+    text = [self matchingWithRegular:regexBracket attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
+        if (results.count != 2) return nil;
+        NSString *bracketStr = results[1];
+        NSMutableAttributedString *attributedString = [weakSelf attStringWithString:bracketStr font:font color:color userInfo:[weakSelf userInfoWithType:5 title:bracketStr key:bracketStr]];
+        if (block) { block(attributedString); }
+        return attributedString;
+    }];
+    return text;
+}
+
+
 #pragma mark userInfo制作
 + (NSMutableDictionary *)userInfoWithType:(NSUInteger)linkType title:(NSString *)title key:(NSString *)key{
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
