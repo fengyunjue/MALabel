@@ -590,17 +590,17 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 }
 
 static NSRegularExpression *regexBracket;
-
+/// 匹配{1{}}或{{}}
 + (NSMutableAttributedString *)attributedBracketString:(NSString *)string font:(UIFont *)font color:(UIColor *)color block:(void(^)(NSMutableAttributedString *attributedString))block {
     if (regexBracket == nil) {
-        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
+        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{([0-9]*)\\{(\\S+?)\\}\\}" options:kNilOptions error:NULL];
     }
     NSMutableAttributedString *text = [self attStringWithString:string font:font color:color userInfo:nil];
-    __weak typeof(self) weakSelf = self;
     text = [self matchingWithRegular:regexBracket attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
-        if (results.count != 2) return nil;
-        NSString *bracketStr = results[1];
-        NSMutableAttributedString *attributedString = [weakSelf attStringWithString:bracketStr font:font color:color userInfo:[weakSelf userInfoWithType:5 title:bracketStr key:bracketStr]];
+        if (results.count != 3) return nil;
+        NSString *index = results[1];
+        NSString *bracketStr = results[2];
+        NSMutableAttributedString *attributedString = [MAContentLabelHelp attStringWithString:bracketStr font:font color:color userInfo:[MAContentLabelHelp userInfoWithType:index.integerValue title:bracketStr key:bracketStr]];
         if (block) { block(attributedString); }
         return attributedString;
     }];
@@ -620,7 +620,6 @@ static NSRegularExpression *regexBracket;
 #pragma mark - 正则表达式
 static NSRegularExpression *regexAtagFormat;
 static NSRegularExpression *regexHttp;
-//static NSRegularExpression *regexBracket;
 static NSRegularExpression *regexPhone;
 static NSRegularExpression *regexImg;
 static NSRegularExpression *regexBr;
@@ -635,8 +634,6 @@ static NSRegularExpression *regexNBSP;
         regexAtagFormat = [NSRegularExpression regularExpressionWithPattern:@"<a\\b[^>]+\\bhref\\s*=\\s*\"([^\"]*)\"[^>]*>([\\s\\S]*?)</a>" options:kNilOptions error:NULL];
         // 匹配http
         regexHttp = [NSRegularExpression regularExpressionWithPattern:@"([hH]ttp[s]{0,1})://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\-~!@#$%^&*+?:_/=<>.\',;]*)?" options:kNilOptions error:NULL];
-        // {{}}
-        //        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
         // 匹配手机号
         regexPhone = [NSRegularExpression regularExpressionWithPattern:@"1[0-9]{10}(?!\\d)" options:kNilOptions error:NULL];
         // 匹配img
@@ -664,13 +661,12 @@ static NSRegularExpression *regexNBSP;
         NSMutableArray <NSString *>*results = [NSMutableArray array];
         for (NSInteger index = 0; index < value.numberOfRanges; index++) {
             NSRange ran = [value rangeAtIndex:index];
+            NSString *str = nil;
             if (ran.location != NSNotFound) {
                 ran.location += offSet;
-                NSString *str = [attributeString.string substringWithRange:ran];
-                if (str.length > 0) {
-                    [results addObject: str];
-                }
+                str = [attributeString.string substringWithRange:ran];
             }
+            [results addObject:str?:@""];
         }
         NSAttributedString *replace = mapHandle(results);
         if (replace) {
