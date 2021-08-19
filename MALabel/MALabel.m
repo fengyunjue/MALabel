@@ -593,7 +593,7 @@ static NSRegularExpression *regexBracket;
 /// 匹配{1{}}或{{}}
 + (NSMutableAttributedString *)attributedBracketString:(NSString *)string font:(UIFont *)font color:(UIColor *)color block:(void(^)(NSMutableAttributedString *attributedString))block {
     if (regexBracket == nil) {
-        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{([0-9]*)\\{(\\S+?)\\}\\}" options:kNilOptions error:NULL];
+        regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{([0-9]*)\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
     }
     NSMutableAttributedString *text = [self attStringWithString:string font:font color:color userInfo:nil];
     text = [self matchingWithRegular:regexBracket attributeString:text mapHandle:^NSAttributedString *(NSArray *results) {
