@@ -591,7 +591,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 
 static NSRegularExpression *regexBracket;
 /// 匹配{1{}}或{{}}
-+ (NSMutableAttributedString *)attributedBracketString:(NSString *)string font:(UIFont *)font color:(UIColor *)color block:(void(^)(NSMutableAttributedString *attributedString))block {
++ (NSMutableAttributedString *)attributedBracketString:(NSString *)string font:(UIFont *)font color:(UIColor *)color block:(void (^)(NSMutableAttributedString * _Nullable, NSDictionary *))block {
     if (regexBracket == nil) {
         regexBracket = [NSRegularExpression regularExpressionWithPattern:@"\\{([0-9]*)\\{(.+?)\\}\\}" options:kNilOptions error:NULL];
     }
@@ -600,8 +600,9 @@ static NSRegularExpression *regexBracket;
         if (results.count != 3) return nil;
         NSString *index = results[1];
         NSString *bracketStr = results[2];
-        NSMutableAttributedString *attributedString = [MAContentLabelHelp attStringWithString:bracketStr font:font color:color userInfo:[MAContentLabelHelp userInfoWithType:index.integerValue title:bracketStr key:bracketStr]];
-        if (block) { block(attributedString); }
+        NSDictionary *userInfo = [MAContentLabelHelp userInfoWithType:index.integerValue title:bracketStr key:bracketStr];
+        NSMutableAttributedString *attributedString = [MAContentLabelHelp attStringWithString:bracketStr font:font color:color userInfo:userInfo];
+        if (block) { block(attributedString, userInfo); }
         return attributedString;
     }];
     return text;
