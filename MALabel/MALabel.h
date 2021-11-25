@@ -139,7 +139,7 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
 
 + (NSMutableDictionary *_Nonnull)userInfoWithType:(NSUInteger)linkType title:(NSString *_Nullable)title key:(NSString *_Nullable)key;
 
-+ (NSMutableAttributedString *_Nullable)attributedBracketString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color block:(void(^_Nullable)(NSMutableAttributedString * _Nullable attributedString, NSDictionary *userInfo))block;
++ (NSMutableAttributedString *_Nullable)attributedBracketString:(NSString *_Nullable)string font:(UIFont *_Nullable)font color:(UIColor *_Nullable)color block:(void(^_Nullable)(NSMutableAttributedString * _Nullable attributedString, NSDictionary * _Nonnull userInfo))block;
 
 
 @end
@@ -148,5 +148,11 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
 
 + (NSTimer *_Nullable)scheduledTimerWithTimeInterval:(NSTimeInterval)interval target:(id _Nullable )target selector:(SEL _Nullable )aSelector userInfo:(id _Nullable )userInfo repeats :(BOOL)repeats;
 + (NSTimer *_Nullable)timerWithTimeInterval:(NSTimeInterval)interval target:(id _Nullable )target selector:(SEL _Nullable )aSelector userInfo:(nullable id)userInfo repeats:(BOOL)repeats;
+
+@end
+
+@interface NSMutableAttributedString(MALabel)
+
+- (void)ma_setParagraphStyleBlock:(void(^_Nonnull)(NSMutableParagraphStyle * _Nonnull style))styleBlock;
 
 @end

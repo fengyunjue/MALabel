@@ -721,3 +721,16 @@ static NSRegularExpression *regexNBSP;
 }
 
 @end
+
+
+@implementation NSMutableAttributedString(Category)
+
+- (void)ma_setParagraphStyleBlock:(void (^)(NSMutableParagraphStyle * _Nonnull))styleBlock {
+    if (styleBlock) {
+        NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc]init];
+        styleBlock(style);
+        [self addAttribute:NSParagraphStyleAttributeName value:style range:NSMakeRange(0, self.length)];
+    }
+}
+
+@end
