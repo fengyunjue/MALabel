@@ -121,9 +121,12 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  
  @param image 图片
  @param font 字体
+ @param imageHeight 图片高度
  @param spacing 间距
  @param userInfo 附加信息
  */
++ (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image font:(UIFont *_Nullable)font imageHeight:(CGFloat)imageHeight spacing :(CGFloat)spacing userInfo:(NSDictionary * _Nullable)userInfo;
+/// 图片高度为font.pointSize
 + (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image font:(UIFont *_Nullable)font spacing:(CGFloat)spacing userInfo:(NSDictionary * _Nullable)userInfo;
 /**
  *  自定义匹配电话,url,http,a标签

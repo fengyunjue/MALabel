@@ -565,25 +565,27 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
  制作图片富文本
  */
 + (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing userInfo:(NSDictionary *)userInfo {
-    if (image == nil || font == nil) {
+    return [self attStringWithImage:image font:font imageHeight:font.pointSize spacing:spacing userInfo:userInfo];
+}
+
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font imageHeight:(CGFloat)imageHeight spacing :(CGFloat)spacing userInfo:(NSDictionary * _Nullable)userInfo {
+    if (image == nil || image.size.width == 0 || image.size.height == 0 || font == nil) {
         return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
+    CGFloat imageWidth = (image.size.width / image.size.height) * imageHeight;
+    
     NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
     NSTextAttachment *attach = [[NSTextAttachment alloc] init];
     attach.image = image;
-    if (font) {
-        CGFloat imgH = font.pointSize;
-        CGFloat imgW = (image.size.width / image.size.height) * imgH;
-        CGFloat textPaddingTop = font.lineHeight - font.pointSize;
-        attach.bounds = CGRectMake(0, -textPaddingTop , imgW, imgH);
-    }
+    CGFloat textPaddingTop = font.lineHeight - font.pointSize;
+    attach.bounds = CGRectMake(0, -textPaddingTop - (imageHeight - font.pointSize)/2, imageWidth, imageHeight);
     NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
     if (userInfo) {
         [attachmentStr addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attachmentStr.length)];
     }
     [textAttrStr appendAttributedString:attachmentStr];
     if (spacing > 0) {
-        [textAttrStr appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+        [textAttrStr insertAttributedString:[[NSAttributedString alloc] initWithString:@" "] atIndex:0];
         [textAttrStr addAttribute:NSKernAttributeName value:@(spacing) range:NSMakeRange(0, 2)];
     }
     return textAttrStr;
