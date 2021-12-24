@@ -156,6 +156,6 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
 
 @interface NSMutableAttributedString(MALabel)
 
-- (void)ma_setParagraphStyleBlock:(void(^_Nonnull)(NSMutableParagraphStyle * _Nonnull style))styleBlock;
+- (NSMutableAttributedString *_Nonnull)ma_setParagraphStyleBlock:(void(^_Nonnull)(NSMutableParagraphStyle * _Nonnull style))styleBlock;
 
 @end
