@@ -564,11 +564,11 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 /**
  制作图片富文本
  */
-+ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing userInfo:(NSDictionary *)userInfo {
-    return [self attStringWithImage:image font:font imageHeight:font.pointSize spacing:spacing userInfo:userInfo];
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
+    return [self attStringWithImage:image font:font imageHeight:font.pointSize spacing:spacing spacingAddLeft:spacingAddLeft userInfo:userInfo];
 }
 
-+ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font imageHeight:(CGFloat)imageHeight spacing :(CGFloat)spacing userInfo:(NSDictionary * _Nullable)userInfo {
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font imageHeight:(CGFloat)imageHeight spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
     if (image == nil || image.size.width == 0 || image.size.height == 0 || font == nil) {
         return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
@@ -585,7 +585,11 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     }
     [textAttrStr appendAttributedString:attachmentStr];
     if (spacing > 0) {
-        [textAttrStr insertAttributedString:[[NSAttributedString alloc] initWithString:@" "] atIndex:0];
+        if (spacingAddLeft) {
+            [textAttrStr insertAttributedString:[[NSAttributedString alloc] initWithString:@" "] atIndex:0];
+        }else{
+            [textAttrStr appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+        }
         [textAttrStr addAttribute:NSKernAttributeName value:@(spacing) range:NSMakeRange(0, 2)];
     }
     return textAttrStr;

@@ -47,7 +47,7 @@
       //    label.linkTextAttributes =  @{NSForegroundColorAttributeName : [UIColor greenColor],NSUnderlineStyleAttributeName: [NSNumber numberWithInteger:NSUnderlineStyleThick]};
       
       //声明表情资源 NSTextAttachment类型
-      NSAttributedString *imageString = [MAContentLabelHelp attStringWithImage:[UIImage imageNamed:@"123.jpg"] font:[UIFont systemFontOfSize:30] spacing:5 userInfo:@{}];
+    NSAttributedString *imageString = [MAContentLabelHelp attStringWithImage:[UIImage imageNamed:@"123.jpg"] font:[UIFont systemFontOfSize:30] spacing:100 spacingAddLeft:NO userInfo:@{}];
       [attStr insertAttributedString:imageString atIndex:0];
       
       [attStr addAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:30],MALinkTextTouchAttributesName:@{NSForegroundColorAttributeName: [UIColor greenColor]}} range:NSMakeRange(0, attStr.length)];
