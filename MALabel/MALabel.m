@@ -58,8 +58,10 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     CALayer *layer = [[CALayer alloc] init];
     layer.frame = self.bounds;
     layer.backgroundColor = [[UIColor clearColor] CGColor];
-    
-    UIGraphicsBeginImageContextWithOptions(layer.bounds.size, NO, 0.0);
+    CGSize size = layer.bounds.size;
+    if (size.width == 0) { size.width = 1; }
+    if (size.height == 0) { size.height = 1; }
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
     CGContextFillRect(context, layer.bounds); // Unmask the whole text area
