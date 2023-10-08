@@ -27,7 +27,7 @@ TODO: Add long description of the pod here.
   s.author           = { 'ma772528138@qq.com' => 'ma772528138@qq.com' }
   s.source           = { :git => 'https://github.com/fengyunjue/MALabel.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '12.0'
 
   s.source_files = 'MALabel/**/*'
   s.public_header_files = 'MALabel/**/*.h'
