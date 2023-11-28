@@ -125,6 +125,8 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
  @param spacing 间距
  @param userInfo 附加信息
  */
++ (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image imageHeight:(CGFloat)imageHeight verticalOffset:(CGFloat)verticalOffset spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft  userInfo:(NSDictionary *_Nullable)userInfo;
+
 + (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image font:(UIFont *_Nullable)font imageHeight:(CGFloat)imageHeight spacing :(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary * _Nullable)userInfo;
 /// 图片高度为font.pointSize
 + (NSMutableAttributedString *_Nonnull)attStringWithImage:(UIImage *_Nullable)image font:(UIFont *_Nullable)font spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary * _Nullable)userInfo;

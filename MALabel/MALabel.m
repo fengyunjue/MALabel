@@ -58,10 +58,8 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     CALayer *layer = [[CALayer alloc] init];
     layer.frame = self.bounds;
     layer.backgroundColor = [[UIColor clearColor] CGColor];
-    CGSize size = layer.bounds.size;
-    if (size.width == 0) { size.width = 1; }
-    if (size.height == 0) { size.height = 1; }
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    
+    UIGraphicsBeginImageContextWithOptions(layer.bounds.size, NO, 0.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
     CGContextFillRect(context, layer.bounds); // Unmask the whole text area
@@ -575,13 +573,20 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     if (image == nil || image.size.width == 0 || image.size.height == 0 || font == nil) {
         return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
+    CGFloat textPaddingTop = font.lineHeight - font.pointSize;
+    return [self attStringWithImage:image imageHeight:imageHeight verticalOffset:textPaddingTop + (imageHeight - font.pointSize)/2 spacing:spacing spacingAddLeft:spacingAddLeft userInfo:userInfo];
+}
+
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image imageHeight:(CGFloat)imageHeight verticalOffset:(CGFloat)verticalOffset spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
+    if (image == nil || image.size.width == 0 || image.size.height == 0) {
+        return [self attStringWithString:@" " font:nil color:nil userInfo:nil];
+    }
     CGFloat imageWidth = (image.size.width / image.size.height) * imageHeight;
     
     NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
     NSTextAttachment *attach = [[NSTextAttachment alloc] init];
     attach.image = image;
-    CGFloat textPaddingTop = font.lineHeight - font.pointSize;
-    attach.bounds = CGRectMake(0, -textPaddingTop - (imageHeight - font.pointSize)/2, imageWidth, imageHeight);
+    attach.bounds = CGRectMake(0, -verticalOffset, imageWidth, imageHeight);
     NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
     if (userInfo) {
         [attachmentStr addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attachmentStr.length)];
