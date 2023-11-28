@@ -573,20 +573,12 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     if (image == nil || image.size.width == 0 || image.size.height == 0 || font == nil) {
         return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
-    CGFloat textPaddingTop = font.lineHeight - font.pointSize;
-    return [self attStringWithImage:image imageHeight:imageHeight verticalOffset:textPaddingTop + (imageHeight - font.pointSize)/2 spacing:spacing spacingAddLeft:spacingAddLeft userInfo:userInfo];
-}
-
-+ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image imageHeight:(CGFloat)imageHeight verticalOffset:(CGFloat)verticalOffset spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
-    if (image == nil || image.size.width == 0 || image.size.height == 0) {
-        return [self attStringWithString:@" " font:nil color:nil userInfo:nil];
-    }
     CGFloat imageWidth = (image.size.width / image.size.height) * imageHeight;
     
     NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
     NSTextAttachment *attach = [[NSTextAttachment alloc] init];
     attach.image = image;
-    attach.bounds = CGRectMake(0, -verticalOffset, imageWidth, imageHeight);
+    attach.bounds = CGRectMake(0, round(font.capHeight - image.size.height)/2.0, imageWidth, imageHeight);
     NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
     if (userInfo) {
         [attachmentStr addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attachmentStr.length)];
