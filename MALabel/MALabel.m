@@ -43,6 +43,9 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 }
 
 - (void)setUp{
+    self.layoutManager.usesFontLeading = NO;
+    self.layoutManager.allowsNonContiguousLayout = NO;
+    
     self.backgroundColor = [UIColor clearColor];
     self.textContainerInset = UIEdgeInsetsZero;
     self.textContainer.lineFragmentPadding = 0;
