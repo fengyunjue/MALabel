@@ -19,7 +19,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    MALabel *label = [[MALabel alloc] init];
+    MALabel *label = [MALabel createLabel];
     label.font = [UIFont systemFontOfSize:18];
     [self.view addSubview:label];
     [label ma_makeConstraints:^(MAAutoLayout * _Nonnull make) {

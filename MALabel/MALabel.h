@@ -25,6 +25,13 @@ typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
 @class MALinkGestureRecognizer;
 @interface MALabel : UITextView
 
+- (instancetype _Nonnull)init NS_UNAVAILABLE;
+- (instancetype _Nonnull)initWithCoder:(NSCoder *_Nullable)coder NS_UNAVAILABLE;
+- (instancetype _Nonnull)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype _Nonnull)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *_Nullable)textContainer NS_UNAVAILABLE;
+
++ (instancetype _Nonnull)createLabel;
+
 @property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> * _Nullable linkTextTouchAttributes;
 @property (nonatomic, copy) NSDictionary<NSAttributedStringKey, id> * _Nullable superLinkTextTouchAttributes;
 

@@ -26,26 +26,18 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 
 @implementation MALabel
 
-- (instancetype)initWithFrame:(CGRect)frame{
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self setUp];
++ (instancetype)createLabel {
+    MALabel *label = nil;
+    if (@available(iOS 16.0, *)) {
+        label = [self textViewUsingTextLayoutManager:NO];
+    }else{
+        label = [[self alloc] init];
     }
-    return self;
-}
-
-- (instancetype)initWithCoder:(NSCoder *)coder{
-    self = [super initWithCoder:coder];
-    if (self) {
-        [self setUp];
-    }
-    return self;
+    [label setUp];
+    return label;
 }
 
 - (void)setUp{
-    self.layoutManager.usesFontLeading = NO;
-    self.layoutManager.allowsNonContiguousLayout = NO;
-    
     self.backgroundColor = [UIColor clearColor];
     self.textContainerInset = UIEdgeInsetsZero;
     self.textContainer.lineFragmentPadding = 0;
