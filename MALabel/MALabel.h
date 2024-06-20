@@ -45,8 +45,8 @@ typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
 
 @property (nonatomic, assign) CGFloat linkCornerRadius;
 
-@property (nonatomic,copy) void (^ _Nullable linkLongPressBlock)(MALabel * _Nullable label, id _Nullable value);
-@property (nonatomic,copy) void (^ _Nullable linkTapBlock)(MALabel * _Nullable label, id _Nullable value);
+@property (nonatomic,copy) void (^ _Nullable linkLongPressBlock)(MALabel * _Nullable label, NSDictionary * _Nullable value);
+@property (nonatomic,copy) void (^ _Nullable linkTapBlock)(MALabel * _Nullable label, NSDictionary * _Nullable value);
 
 @property (nonatomic,copy) void (^ _Nullable commonTapBlock)(MALabel * _Nullable label);
 @property (nonatomic,copy) void (^ _Nullable commonLongPressBlock)(MALabel * _Nullable label);
@@ -164,5 +164,12 @@ static NSString * _Nonnull const MALinkURL             = @"MALinkURL";//url
 @interface NSMutableAttributedString(MALabel)
 
 - (NSMutableAttributedString *_Nonnull)ma_setParagraphStyleBlock:(void(^_Nonnull)(NSMutableParagraphStyle * _Nonnull style))styleBlock;
+
+@end
+
+
+@interface NSAttributedString(MALabel)
+
+- (NSRange)allRange;
 
 @end

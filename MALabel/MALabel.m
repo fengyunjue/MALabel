@@ -242,7 +242,8 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
             NSRange range = [value[@"range"] rangeValue];
             BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
             if (range.location < self.attributedText.length) {
-                id value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                NSDictionary *value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                if (value != nil && ![value isKindOfClass:[NSDictionary class]]) { value = @{@"value":value}; }
                 self.linkTapBlock(self, value);
             }else if (self.commonTapBlock){
                 self.commonTapBlock(self);
@@ -259,7 +260,8 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
             NSRange range = [value[@"range"] rangeValue];
             BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
             if (range.location < self.attributedText.length) {
-                id value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                NSDictionary *value = [self.attributedText attribute:isSuperLink ? MASuperLinkAttributeName : MALinkAttributeName atIndex:range.location effectiveRange:NULL];
+                if (value != nil && ![value isKindOfClass:[NSDictionary class]]) { value = @{@"value":value}; }
                 self.linkLongPressBlock(self, value);
             }else if (self.commonLongPressBlock){
                 self.commonLongPressBlock(self);
@@ -733,6 +735,15 @@ static NSRegularExpression *regexNBSP;
         [self addAttribute:NSParagraphStyleAttributeName value:style range:NSMakeRange(0, self.length)];
     }
     return self;
+}
+
+@end
+
+
+@implementation NSAttributedString(MALabel)
+
+- (NSRange)allRange {
+    return NSMakeRange(0, self.length);
 }
 
 @end
