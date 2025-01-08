@@ -562,11 +562,11 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 /**
  制作图片富文本
  */
-+ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
-    return [self attStringWithImage:image font:font imageHeight:font.pointSize spacing:spacing spacingAddLeft:spacingAddLeft userInfo:userInfo];
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft topSpacing:(CGFloat)topSpacing userInfo:(NSDictionary *)userInfo {
+    return [self attStringWithImage:image font:font imageHeight:font.pointSize spacing:spacing spacingAddLeft:spacingAddLeft topSpacing:topSpacing userInfo:userInfo];
 }
 
-+ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font imageHeight:(CGFloat)imageHeight spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft userInfo:(NSDictionary *)userInfo {
++ (NSMutableAttributedString *)attStringWithImage:(UIImage *)image font:(UIFont *)font imageHeight:(CGFloat)imageHeight spacing:(CGFloat)spacing spacingAddLeft:(BOOL)spacingAddLeft topSpacing:(CGFloat)topSpacing userInfo:(NSDictionary *)userInfo {
     if (image == nil || image.size.width == 0 || image.size.height == 0 || font == nil) {
         return [self attStringWithString:@" " font:font color:nil userInfo:nil];
     }
@@ -575,7 +575,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     NSMutableAttributedString *textAttrStr = [[NSMutableAttributedString alloc] init];
     NSTextAttachment *attach = [[NSTextAttachment alloc] init];
     attach.image = image;
-    attach.bounds = CGRectMake(0, round(font.capHeight - image.size.height)/2.0, imageWidth, imageHeight);
+    attach.bounds = CGRectMake(0, roundf(font.capHeight - imageHeight)/2.0 + topSpacing, imageWidth, imageHeight);
     NSMutableAttributedString *attachmentStr = [[NSMutableAttributedString alloc] initWithAttributedString:[NSAttributedString attributedStringWithAttachment:attach]];
     if (userInfo) {
         [attachmentStr addAttribute:MALinkAttributeName value:userInfo range:NSMakeRange(0, attachmentStr.length)];
