@@ -214,23 +214,25 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
     for (NSDictionary *value in rangeValues) {
         NSRange range = [value[@"range"] rangeValue];
         BOOL isSuperLink = [value[@"isSuperLink"] boolValue];
-        
-        if (isSuperLink) {
-            NSDictionary *superLinkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MASuperLinkTextTouchAttributesName]?:self.superLinkTextTouchAttributes;
-            for (NSString *attribute in superLinkTextTouchAttributes) {
-                [attributedText removeAttribute:attribute range:range];
-            }
-        }else{
-            NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
-            NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName] ?:self.linkTextTouchAttributes;
-            
-            for (NSString *attribute in linkTextTouchAttributes) {
-                [attributedText removeAttribute:attribute range:range];
-            }
-            if (linkTextAttributes) {
-                [attributedText addAttributes:linkTextAttributes range:range];
+        if (attributedText.length != 0 && range.location >=0 && range.length > 0 && range.location + range.length <= attributedText.length) {
+            if (isSuperLink) {
+                NSDictionary *superLinkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MASuperLinkTextTouchAttributesName]?:self.superLinkTextTouchAttributes;
+                for (NSString *attribute in superLinkTextTouchAttributes) {
+                    [attributedText removeAttribute:attribute range:range];
+                }
+            }else{
+                NSDictionary *linkTextAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextAttributesName]?:self.linkTextAttributes;
+                NSDictionary *linkTextTouchAttributes = [MALabel linkeAttributesWithAttributedText:attributedText range:range attributesName:MALinkTextTouchAttributesName] ?:self.linkTextTouchAttributes;
+                
+                for (NSString *attribute in linkTextTouchAttributes) {
+                    [attributedText removeAttribute:attribute range:range];
+                }
+                if (linkTextAttributes) {
+                    [attributedText addAttributes:linkTextAttributes range:range];
+                }
             }
         }
+
     }
     [super setAttributedText:attributedText];
     self.layer.mask = nil;
