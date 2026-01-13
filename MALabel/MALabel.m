@@ -151,13 +151,16 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 
 - (void)linkAction:(MALinkGestureRecognizer *)recognizer{
     if (recognizer.state == UIGestureRecognizerStateBegan) {
-        NSAssert(self.rangeValuesForTouchDown == nil, @"Invalid touch down ranges");
-        
+        if (self.rangeValuesForTouchDown != nil) {
+            [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
+            self.rangeValuesForTouchDown = nil;
+        }
         CGPoint location = [recognizer locationInView:self];
         self.rangeValuesForTouchDown = [self didTouchDownAtLocation:location];
     } else if (recognizer.state == UIGestureRecognizerStateEnded) {
-        NSAssert(self.rangeValuesForTouchDown != nil, @"Invalid touch down ranges");
-        
+        if (self.rangeValuesForTouchDown == nil) {
+            return;
+        }
         [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
 
         if (recognizer.result == MALinkGestureRecognizerResultTap) {
