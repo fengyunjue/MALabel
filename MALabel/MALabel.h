@@ -48,6 +48,11 @@ typedef NS_ENUM(NSUInteger, MALinkGestureRecognizerResult) {
 @property (nonatomic,copy) void (^ _Nullable linkLongPressBlock)(MALabel * _Nullable label, NSDictionary * _Nullable value);
 @property (nonatomic,copy) void (^ _Nullable linkTapBlock)(MALabel * _Nullable label, NSDictionary * _Nullable value);
 
+/// 非 link 区域触摸按下（立刻回调，用于高亮）
+@property (nonatomic,copy) void (^ _Nullable touchDownBlock)(MALabel * _Nullable label);
+/// 非 link 区域触摸抬起/取消（清除高亮）
+@property (nonatomic,copy) void (^ _Nullable touchUpBlock)(MALabel * _Nullable label);
+
 @property (nonatomic,copy) void (^ _Nullable commonTapBlock)(MALabel * _Nullable label);
 @property (nonatomic,copy) void (^ _Nullable commonLongPressBlock)(MALabel * _Nullable label);
 

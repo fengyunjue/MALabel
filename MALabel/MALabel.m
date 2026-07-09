@@ -151,16 +151,17 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 
 - (void)linkAction:(MALinkGestureRecognizer *)recognizer{
     if (recognizer.state == UIGestureRecognizerStateBegan) {
-        if (self.rangeValuesForTouchDown != nil) {
-            [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
-            self.rangeValuesForTouchDown = nil;
-        }
+        NSAssert(self.rangeValuesForTouchDown == nil, @"Invalid touch down ranges");
+        
         CGPoint location = [recognizer locationInView:self];
         self.rangeValuesForTouchDown = [self didTouchDownAtLocation:location];
-    } else if (recognizer.state == UIGestureRecognizerStateEnded) {
-        if (self.rangeValuesForTouchDown == nil) {
-            return;
+        // 非 link 区域触摸按下，立即回调供外层做高亮
+        if (self.rangeValuesForTouchDown.count == 0 && self.touchDownBlock) {
+            self.touchDownBlock(self);
         }
+    } else if (recognizer.state == UIGestureRecognizerStateEnded) {
+        NSAssert(self.rangeValuesForTouchDown != nil, @"Invalid touch down ranges");
+        
         [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
 
         if (recognizer.result == MALinkGestureRecognizerResultTap) {
@@ -168,7 +169,18 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
         } else if (recognizer.result == MALinkGestureRecognizerResultLongPress) {
             [self didLongPressAtRangeValues:self.rangeValuesForTouchDown];
         }
-        
+        // 非 link 区域触摸结束，清除高亮
+        if (self.rangeValuesForTouchDown.count == 0 && self.touchUpBlock) {
+            self.touchUpBlock(self);
+        }
+
+        self.rangeValuesForTouchDown = nil;
+    } else if (recognizer.state == UIGestureRecognizerStateCancelled
+               || recognizer.state == UIGestureRecognizerStateFailed) {
+        [self didCancelTouchDownAtRangeValues:self.rangeValuesForTouchDown];
+        if (self.rangeValuesForTouchDown.count == 0 && self.touchUpBlock) {
+            self.touchUpBlock(self);
+        }
         self.rangeValuesForTouchDown = nil;
     }
 }
@@ -423,7 +435,7 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
     [super touchesEnded:touches withEvent:event];
-    
+
     if ([self touchIsCloseToInitialPoint:touches.anyObject]) {
         self.result = MALinkGestureRecognizerResultTap;
         self.state = UIGestureRecognizerStateRecognized;
@@ -431,6 +443,14 @@ NSAttributedStringKey const MASuperLinkTextTouchAttributesName = @"MASuperLinkTe
         self.result = MALinkGestureRecognizerResultFailed;
         self.state = UIGestureRecognizerStateRecognized;
     }
+}
+
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [super touchesCancelled:touches withEvent:event];
+    [self.timer invalidate];
+    self.timer = nil;
+    self.result = MALinkGestureRecognizerResultFailed;
+    self.state = UIGestureRecognizerStateFailed;
 }
 
 - (BOOL)touchIsCloseToInitialPoint:(UITouch *)touch{
